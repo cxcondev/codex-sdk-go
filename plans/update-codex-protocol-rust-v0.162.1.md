@@ -10,7 +10,7 @@ Update the Go SDK from Codex 0.160.0 to stable 0.162.1 so callers can use curren
 ## Tracker Mapping
 
 
-Workflow: `WORKFLOW.md`. Linear project: P-COLIN-6 (codex-sdk). Issue: COLIN-225, In Progress, owns all three milestones. The completed 0.160.0 plan remains historical.
+Workflow: `WORKFLOW.md`. Linear project: P-COLIN-6 (codex-sdk). Issue: COLIN-225 owns all three completed milestones. The completed 0.160.0 plan remains historical.
 
 ## Progress
 
@@ -24,7 +24,9 @@ Workflow: `WORKFLOW.md`. Linear project: P-COLIN-6 (codex-sdk). Issue: COLIN-225
 - [x] (2026-10-12 UTC) Corrected Go patch pins and passed the authoritative complete Go 1.26.9 gate, including determinism and zero reachable vulnerabilities. Go 1.27.2 native vet/unit/race/vulnerability checks and supported-toolchain Staticcheck/actionlint also pass.
 - [x] (2026-10-12 UTC) Completed independent QA, architecture, and security reviews. QA/security found no actionable issues; fixed architecture's stale plan statement and orphaned documentation finding with a failing-then-passing regression.
 - [x] (2026-10-12 UTC) Completed regeneration and the authoritative gate after review fixes: two identical generations, all local checks, no vulnerabilities.
-- [ ] Stage named reviewed paths, commit, open protected PR, pass hosted checks, merge, and verify automatic release and immutable tag.
+- [x] (2026-10-12 UTC) Staged 23 named reviewed paths and committed e0937cbb8ead2eee7485f2ac6c7ee498ce29845d; PR #15 passed Go 1.26/1.27 and Coverage report and merged through protection at 44ab213c459c39fa6a0e733a698d6ea58876b7aa. Remote feature branch deleted.
+- [x] (2026-10-12 UTC) Automatic Release 38195444184 passed validation, Quality, trusted E2E, and publication. Remote annotated v0.162.1 peels to the exact gated merge commit.
+- [x] (2026-10-12 UTC) Recorded final evidence and completed outcomes for the protected documentation closeout.
 
 ## Surprises & Discoveries
 
@@ -44,7 +46,7 @@ Approve union digest 0a713f8e5cdc656a268e0a295111528b7cf7787cf8bf9e61c286f396c0b
 
 Approve opaque digest aa9797066f9ef641746535a494de20b16e172ee23352cb1dcd8d1bf398e4a743 after reproducing the old 105-entry digest with the generator's AST algorithm and comparing the complete printed 104-entry target. Exactly type CodexErrorInfo interface{} was removed; no opaque type or field was added.
 
-Live protection requires strict Coverage report, Go 1.26, and Go 1.27 checks, zero approving reviews, and resolved conversations. Both e2e and release environments permit protected branches with no required reviewers. An active immutable-tag ruleset exists. Verify detailed tag rules before publication. No settings change is currently needed.
+Live protection requires strict Coverage report, Go 1.26, and Go 1.27 checks, zero approving reviews, and resolved conversations. Both e2e and release environments permit protected branches with no required reviewers. The active v* tag ruleset forbids deletion and non-fast-forward updates, with no bypass actors. All policies were verified before publication; no settings change was needed.
 
 Keep supported Go minor families and stable hosted check names; update only fixed patch pins to 1.26.9/1.27.2 in go.mod, tests.yml, README.md, APP.md, and WORKFLOW.md. Validated planner amendment and official metadata justify this security correction within COLIN-225 to satisfy the authorized gate. Historical plans remain unchanged.
 
@@ -53,7 +55,9 @@ Go 1.27.2 passed native vet, unit/race tests, and govulncheck, but Staticcheck 0
 ## Outcomes & Retrospective
 
 
-Protocol generation, compatibility regressions, real-CLI lifecycle verification, and the complete patched-toolchain local gate passed. Independent reviews are complete and their two cleanup findings are fixed; the final authoritative regeneration/gate passed again. Protected publication remains.
+SDK v0.162.1 is published from protected-main commit 44ab213c459c39fa6a0e733a698d6ea58876b7aa. [PR #15](https://github.com/pmenglund/codex-sdk-go/pull/15) passed required Go 1.26/1.27 and Coverage report checks and merged through protection; its remote feature branch was deleted. [Automatic Release 38195444184](https://github.com/pmenglund/codex-sdk-go/actions/runs/38195444184) passed candidate validation, both Quality toolchains, coverage, trusted E2E, and publication. GitHub API and independent git ls-remote confirm annotated tag object b118b17cd20c6ed48c6efaf60c5028b0612bb6a9 peels to that exact gated commit.
+
+The authoritative updater passed two identical generations and all local gates after review fixes. Native Go 1.27.2 checks and credential-free real-CLI lifecycle race tests also passed. QA/security reviews found no actionable issues; architecture found stale plan wording and orphaned generated documentation, both fixed with a failing-then-passing generator regression and confirmed resolved. The Go patch upgrade cleared nine standard-library advisories; Staticcheck remains on the supported patched minimum toolchain while runtime/vulnerability checks remain native in both jobs. No local tag was created or moved, no protection was changed, and no gate was bypassed. This documentation closeout changes no SDK version and triggers no release.
 
 Initial regressions reproduced missing goal origin, parent/root turn attribution, and unrecognized additional_tools. A future error containing 9007199254740993 also round-tripped incorrectly as 9007199254740992 through the existing interface representation. CodexErrorInfo now aliases json.RawMessage and the intentional low-level source change is documented. Manual ancestry fields pass exact source-schema coverage; both inventory digests are reviewed and approved.
 
@@ -130,3 +134,5 @@ Revision note: QA and security reviews found no actionable issues. Architecture 
 Revision note: Final updater after review fixes passed in /private/tmp/codex-01621-review/review-final-gate.log. Reviewed the regenerated comment removals: all belong to filtered declarations; remaining declarations and their documentation are preserved. No inventory or protocol wire change was introduced by the cleanup.
 
 Revision note: Architecture confirmed both fixes and no remaining findings. The changed generator also passed uncached Go 1.27.2 race tests. Release/tag/version-transition/content-manifest fixtures passed before named-path staging.
+
+Revision note: Completed protected PR and automatic publication, independently verified the annotated tag and exact candidate SHA, and recorded final outcomes. All release acceptance criteria are satisfied.
