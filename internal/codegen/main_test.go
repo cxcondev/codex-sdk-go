@@ -1222,6 +1222,13 @@ func TestGenerateProtocolTypesSkipsManualTypes(t *testing.T) {
 			"threadId": map[string]any{"type": "string"},
 		},
 	})
+	writeJSON(t, filepath.Join(schemaDir, "CodexErrorInfo.json"), map[string]any{
+		"title": "CodexErrorInfo",
+		"anyOf": []map[string]any{
+			{"type": "string"},
+			{"type": "object"},
+		},
+	})
 	writeJSON(t, filepath.Join(schemaDir, "Foo.json"), map[string]any{
 		"title": "Foo",
 		"type":  "object",
@@ -1239,6 +1246,9 @@ func TestGenerateProtocolTypesSkipsManualTypes(t *testing.T) {
 	}
 	if strings.Contains(string(typesData), "type ThreadGoal ") {
 		t.Fatalf("expected manual ThreadGoal to be skipped, got %s", typesData)
+	}
+	if strings.Contains(string(typesData), "type CodexErrorInfo ") {
+		t.Fatalf("expected lossless manual CodexErrorInfo to be skipped, got %s", typesData)
 	}
 	if !strings.Contains(string(typesData), "type SanitizedFooJSON ") {
 		t.Fatalf("expected non-manual Foo to be generated, got %s", typesData)
@@ -1262,6 +1272,32 @@ type Foo struct {
 	}
 	if !strings.Contains(got, "type Foo ") {
 		t.Fatalf("expected Foo declaration to remain, got %s", got)
+	}
+}
+
+func TestFilterManualTypeDeclarationsRemovesAttachedDocumentation(t *testing.T) {
+	source := []byte(`package protocol
+
+// Unattached context remains.
+
+// CodexErrorInfo describes the filtered declaration.
+//
+// Its upstream description must not become orphaned.
+type CodexErrorInfo interface{}
+
+// Kept describes the generated declaration.
+type Kept string
+`)
+	got := string(filterManualTypeDeclarations(source, map[string]struct{}{"CodexErrorInfo": {}}))
+	for _, removed := range []string{"CodexErrorInfo", "upstream description"} {
+		if strings.Contains(got, removed) {
+			t.Errorf("filtered declaration left %q behind:\n%s", removed, got)
+		}
+	}
+	for _, kept := range []string{"// Unattached context remains.", "// Kept describes the generated declaration.", "type Kept string"} {
+		if !strings.Contains(got, kept) {
+			t.Errorf("removed unrelated %q:\n%s", kept, got)
+		}
 	}
 }
 

@@ -361,6 +361,8 @@ type Turn struct {
 	StartedAt   *int64        `json:"startedAt,omitempty"`
 	CompletedAt *int64        `json:"completedAt,omitempty"`
 	DurationMs  *int64        `json:"durationMs,omitempty"`
+	// RootTurnID identifies the first turn in this chain of work; older history may omit it.
+	RootTurnID *string `json:"rootTurnId,omitempty"`
 }
 
 // Thread represents the complete thread summary returned by the app-server.
@@ -876,6 +878,9 @@ type TurnStartParams struct {
 	Summary             json.RawMessage            `json:"summary,omitempty"`
 	OutputSchema        json.RawMessage            `json:"outputSchema,omitempty"`
 	Personality         *Personality               `json:"personality,omitempty"`
+	// ParentTurnID and RootTurnID attribute delegated work; leave them unset for direct user work.
+	ParentTurnID *string `json:"parentTurnId,omitempty"`
+	RootTurnID   *string `json:"rootTurnId,omitempty"`
 }
 
 // TurnSteerParamsInputElem is retained for source compatibility.
@@ -910,6 +915,10 @@ type ItemCompletedNotification struct {
 	Item          ThreadItem `json:"item"`
 	CompletedAtMs int64      `json:"completedAtMs"`
 }
+
+// CodexErrorInfo preserves known and future server error strings or objects as raw JSON.
+// Use json.Unmarshal to inspect a variant without losing large integers during a round trip.
+type CodexErrorInfo = json.RawMessage
 
 // ErrorNotification is the payload for error notifications.
 type ErrorNotification struct {

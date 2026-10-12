@@ -9,7 +9,7 @@ This SDK speaks JSON-RPC to the `codex app-server` process. By default it spawns
 
 ## Requirements
 
-- Go 1.26.8 or newer
+- Go 1.26.9 or newer
 - `codex` available on your `PATH`
 
 ## Install
@@ -294,9 +294,31 @@ before the process starts. Set `CompatibilityPolicy: codex.Warn` only after
 validating compatibility (and provide a logger to see the warning), or
 `codex.Ignore` to skip the probe. Custom transports are never probed.
 
+### Updating to protocol 0.162.1
+
+This SDK targets Codex CLI 0.162.x. Low-level RPC adds
+`ThreadAttachmentOwnerList` for reverse attachment lookup and
+`thread/prediction/updated` notifications with raw-preserving completed/failed
+results. `TurnStartParams.ParentTurnID` and `RootTurnID` attribute delegated work;
+leave them unset for work started directly by the user. Returned `Turn` values
+expose nullable `RootTurnID`.
+
+Goal set/clear parameters now accept optional `Origin` (`user` or `automatic`).
+Missing origin does not supply user authorization. MCP OAuth responses and
+completion notifications expose optional `LoginID` for matching login attempts.
+Assistant message phases now include `partial_answer`, which may precede more
+output or tools.
+
+`CodexErrorInfo` is now an alias of `json.RawMessage`, preserving arbitrary
+future error objects and large integers. Callers assigning strings or maps must
+marshal those values first; use `json.Unmarshal` to inspect the received JSON.
+`ResponseItem` recognizes `additional_tools` and preserves its arbitrary tool
+payloads. Upstream removed `ModelProviderCapabilitiesReadResponse.NamespaceTools`;
+that field is removed from the generated SDK type.
+
 ### Updating to protocol 0.160.0
 
-This SDK targets Codex CLI 0.160.x. Low-level RPC adds gateway OAuth status,
+The 0.160.0 update added gateway OAuth status,
 login, and cancellation, plus thread attachment add/list/remove calls and their
 notifications. Attachment payloads use `json.RawMessage` to preserve arbitrary JSON
 numbers and future fields. Upstream removed `thread/rollback`; its generated method and
