@@ -28,10 +28,10 @@ const (
 	codexRepoRootEnv             = "CODEX_REPO_ROOT"
 	codexRepoRefEnv              = "CODEX_REPO_REF"
 	opaqueInterfaceInventoryEnv  = "CODEX_PRINT_OPAQUE_INTERFACE_INVENTORY"
-	approvedUnionInventorySHA256 = "0b3fbe996fafc3b6a356b643f52a9777cb49b5e89b8b08089e213c55281577ad"
+	approvedUnionInventorySHA256 = "0a713f8e5cdc656a268e0a295111528b7cf7787cf8bf9e61c286f396c0bb310b"
 )
 
-var approvedOpaqueInterfaceInventorySHA256 = "3dd6c1d855fb38cc550c690e767621de8d9a8c8bc7befcfa9d6cdf38eb152539"
+var approvedOpaqueInterfaceInventorySHA256 = "aa9797066f9ef641746535a494de20b16e172ee23352cb1dcd8d1bf398e4a743"
 
 func main() {
 	sdkRoot, err := repoRoot()
@@ -571,6 +571,11 @@ func filterManualTypeDeclarations(src []byte, manualTypes map[string]struct{}) [
 			fields := strings.Fields(trimmed)
 			if len(fields) >= 2 {
 				if _, ok := manualTypes[fields[1]]; ok {
+					// Generated declarations use contiguous line-comment GoDoc groups.
+					// Remove the attached group with the declaration, preserving separated context.
+					for len(out) > 0 && strings.HasPrefix(strings.TrimSpace(out[len(out)-1]), "//") {
+						out = out[:len(out)-1]
+					}
 					i++
 					balance := strings.Count(line, "{") - strings.Count(line, "}")
 					for i < len(lines) && balance > 0 {
@@ -1042,7 +1047,6 @@ var opaqueGeneratedInterfaceAllowlist = map[string]struct{}{
 	"AskForApproval":                            {},
 	"AuthMode":                                  {},
 	"ChatgptAuthTokensRefreshReason":            {},
-	"CodexErrorInfo":                            {},
 	"CommandExecOutputStream":                   {},
 	"ConsumeAccountRateLimitResetCreditOutcome": {},
 	"ExperimentalFeatureStage":                  {},
@@ -1768,6 +1772,7 @@ func clientMethodName(method rpcMethod) string {
 
 func manualProtocolTypes() map[string]struct{} {
 	return map[string]struct{}{
+		"CodexErrorInfo":                                   {},
 		"ThreadAttachment":                                 {},
 		"ThreadAttachmentAddParams":                        {},
 		"SanitizedThreadAttachmentAddParamsJSON":           {},
