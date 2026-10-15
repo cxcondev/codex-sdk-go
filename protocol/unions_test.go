@@ -12,6 +12,8 @@ func TestCommandExecutionApprovalDecision(t *testing.T) {
 		"acceptForSession",
 		"decline",
 		"cancel",
+		map[string]any{"acceptWithExecpolicyAmendment": map[string]any{"execpolicy_amendment": []string{"git status"}}},
+		map[string]any{"applyNetworkPolicyAmendment": map[string]any{"network_policy_amendment": map[string]any{}}},
 		map[string]any{"acceptWithExecpolicyAmendment": map[string]any{"execpolicyAmendment": []string{"git status"}}},
 		map[string]any{"applyNetworkPolicyAmendment": map[string]any{"networkPolicyAmendment": map[string]any{}}},
 	} {
@@ -32,6 +34,9 @@ func TestCommandExecutionApprovalDecision(t *testing.T) {
 		map[string]any{"decline": map[string]any{}},
 		map[string]any{"cancel": map[string]any{}},
 		map[string]any{"unknown": map[string]any{}},
+		map[string]any{"acceptWithExecpolicyAmendment": map[string]any{}},
+		map[string]any{"acceptWithExecpolicyAmendment": map[string]any{"execpolicy_amendment": nil}},
+		map[string]any{"applyNetworkPolicyAmendment": map[string]any{"execpolicy_amendment": []string{}}},
 		1,
 	} {
 		if _, err := NewCommandExecutionApprovalDecision(value); err == nil {
@@ -446,4 +451,21 @@ func jsonEqual(left, right any) bool {
 	leftJSON, _ := json.Marshal(left)
 	rightJSON, _ := json.Marshal(right)
 	return string(leftJSON) == string(rightJSON)
+}
+
+// TestCommandExecutionRequestApprovalParamsCodex162 decodes an approval
+// request exactly as codex 0.162.1 sends it under approvalPolicy untrusted.
+func TestCommandExecutionRequestApprovalParamsCodex162(t *testing.T) {
+	raw := `{"kind":"command","threadId":"t","turnId":"u","itemId":"c","startedAtMs":1792032324925,"environmentId":"local","command":"/bin/bash -lc 'cat /etc/hostname'","cwd":"/tmp","commandActions":[{"type":"read","command":"cat /etc/hostname","name":"hostname","path":"/etc/hostname"}],"proposedExecpolicyAmendment":["cat","/etc/hostname"],"availableDecisions":["accept",{"acceptWithExecpolicyAmendment":{"execpolicy_amendment":["cat","/etc/hostname"]}},"cancel"]}`
+	var params CommandExecutionRequestApprovalParams
+	if err := json.Unmarshal([]byte(raw), &params); err != nil {
+		t.Fatal(err)
+	}
+	if len(params.AvailableDecisions) != 3 || params.AvailableDecisions[1].Kind() != CommandExecutionApprovalDecisionKindAcceptWithExecpolicyAmendment {
+		t.Fatalf("available decisions = %#v", params.AvailableDecisions)
+	}
+	out, err := json.Marshal(params.AvailableDecisions[1])
+	if err != nil || !strings.Contains(string(out), `"execpolicy_amendment"`) {
+		t.Fatalf("round trip = %s, %v", out, err)
+	}
 }

@@ -223,11 +223,15 @@ func (d *CommandExecutionApprovalDecision) decode(data []byte, requireKnown bool
 			return fmt.Errorf("unknown command approval decision %q", kind)
 		}
 		if known {
-			required := "execpolicyAmendment"
+			// codex 0.162.1 serializes the variant payload fields in
+			// snake_case (see its CommandExecutionApprovalDecision schema);
+			// the camelCase spelling earlier SDK releases required is still
+			// accepted.
+			required, alias := "execpolicy_amendment", "execpolicyAmendment"
 			if kind == CommandExecutionApprovalDecisionKindApplyNetworkPolicyAmendment {
-				required = "networkPolicyAmendment"
+				required, alias = "network_policy_amendment", "networkPolicyAmendment"
 			}
-			if err := requireDecisionObjectField(body, required); err != nil {
+			if err := requireDecisionObjectField(body, required, alias); err != nil {
 				return fmt.Errorf("command approval decision %q: %w", kind, err)
 			}
 		}
@@ -260,16 +264,19 @@ func isStructuredCommandExecutionApprovalDecisionKind(kind CommandExecutionAppro
 	}
 }
 
-func requireDecisionObjectField(body json.RawMessage, field string) error {
+// requireDecisionObjectField reports whether body has a non-null field or
+// one of its aliases.
+func requireDecisionObjectField(body json.RawMessage, field string, aliases ...string) error {
 	var object map[string]json.RawMessage
 	if err := json.Unmarshal(body, &object); err != nil {
 		return errors.New("variant payload must be an object")
 	}
-	value, ok := object[field]
-	if !ok || string(value) == "null" {
-		return fmt.Errorf("required field %q is missing", field)
+	for _, name := range append([]string{field}, aliases...) {
+		if value, ok := object[name]; ok && string(value) != "null" {
+			return nil
+		}
 	}
-	return nil
+	return fmt.Errorf("required field %q is missing", field)
 }
 
 func requireDecisionStringField(body json.RawMessage, field string) error {
